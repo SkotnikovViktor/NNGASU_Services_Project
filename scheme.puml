@@ -1,10 +1,29 @@
 @startuml
-
 skinparam linetype ortho
 allowmixing
 
 skinparam nodesep 24
 skinparam ranksep 10
 skinparam padding 4
+
+class user {}
+
+' === BACKEND ===
+package backend <<Folder>> {
+  class NGinx {}
+}
+
+' === FRONTEND ===
+package frontend <<Folder>> {
+ class index_html {}
+ class js {}
+}
+
+' === DEPENDENCIES ===
+user -left--> index_html
+js --> NGinx
+
+' === HIDDEN ===
+js -[hidden]right- index_html
 
 @enduml
