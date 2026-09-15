@@ -1,0 +1,10 @@
+@startuml
+
+skinparam linetype ortho
+allowmixing
+
+skinparam nodesep 24
+skinparam ranksep 10
+skinparam padding 4
+
+@enduml
