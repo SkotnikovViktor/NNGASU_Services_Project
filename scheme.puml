@@ -6,24 +6,48 @@ skinparam nodesep 24
 skinparam ranksep 10
 skinparam padding 4
 
-class user {}
+class user {
+~ brain
+}
 
 ' === BACKEND ===
-package backend <<Folder>> {
+package "backend" as back_part <<Folder>> {
   class NGinx {}
+
+  package backend {}
+  package database {}
 }
 
 ' === FRONTEND ===
-package frontend <<Folder>> {
+package "frontend" as front_part <<Folder>> {
+ package pages {
+  class html {}
+ }
+
+ package styles {
+  class css {}
+ }
+
+ package scripts {
+  class js {}
+ }
+
  class index_html {}
- class js {}
 }
 
 ' === DEPENDENCIES ===
 user -left--> index_html
+
+index_html --> pages
+index_html --> styles
+index_html --> scripts
+
+
 js --> NGinx
 
 ' === HIDDEN ===
 js -[hidden]right- index_html
+
+' === NOTES ===
 
 @enduml
