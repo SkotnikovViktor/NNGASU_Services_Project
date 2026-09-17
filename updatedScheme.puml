@@ -1,0 +1,103 @@
+@startuml
+skinparam linetype ortho
+allowmixing
+skinparam nodesep 90
+skinparam ranksep 140
+skinparam padding 8
+
+class "Студент" as user {
+  ~ brain
+}
+class "Преподаватель\nпо физре" as teacher {
+  ~ brain
+}
+
+package "backend" as back_part <<Folder>> {
+  class NGinx {
+    + Балансировщик
+  }
+  package "Microservices" {
+    class AuthService {
+      + Вход / Выход
+      + Валидация токенов
+      + Проверка ролей
+    }
+    class PEService {
+      + Запись на отработки
+      + Управление слотами
+    }
+    class ScheduleService {
+      + Выдача расписания
+      + Парсер изменений
+    }
+    class RouteService {
+      + Поиск кратчайшего пути
+    }
+    class WeatherService {
+      + Текущая погода\nи прогноз
+    }
+  }
+  package "Databases & Cache" {
+    database PostgreSQL {
+      class UsersTable {
+        + Логины / Пароли
+        + Роли
+      }
+      class PESlotsTable {
+        + Расписание слотов
+        + Записи / Статус
+      }
+      class ScheduleDB {
+        + Пары и группы
+      }
+      class RoutesDB {
+        + Граф аудиторий
+      }
+    }
+    database Redis {
+      class CacheAndTokens {
+        + Blacklist токенов
+        + Кеш погоды (TTL 1h)
+      }
+    }
+  }
+}
+
+package "frontend (React)" as front_part <<Folder>> {
+  package components {
+    class UI {}
+  }
+  package api_client {
+    class Fetcher {
+      + Хранение JWT в памяти
+    }
+  }
+}
+
+user -right-> front_part
+teacher -right-> front_part
+
+Fetcher ----down-> NGinx : " API запросы"
+
+NGinx ----down-> AuthService : " Auth"
+NGinx ----down-> ScheduleService : " open"
+NGinx ----down-> RouteService : " open"
+NGinx ----down-> WeatherService : " open"
+
+AuthService -right-> PEService : " Проверка прав"
+
+AuthService <----down-> CacheAndTokens : " Проверка Blacklist"
+AuthService ----down-> UsersTable : " Сверка логина"
+PEService <----down-> PESlotsTable : " Чтение/Запись"
+ScheduleService <----down-> ScheduleDB : " Чтение"
+RouteService <----down-> RoutesDB : " Поиск пути"
+WeatherService <----down-> CacheAndTokens : ""
+
+user -[hidden]down- teacher
+PEService -[hidden]right- ScheduleService
+ScheduleService -[hidden]right- RouteService
+RouteService -[hidden]right- WeatherService
+UsersTable -[hidden]right- PESlotsTable
+PESlotsTable -[hidden]right- ScheduleDB
+ScheduleDB -[hidden]right- RoutesDB
+@enduml
