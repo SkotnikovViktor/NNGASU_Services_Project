@@ -7,11 +7,14 @@ skinparam ranksep 10
 skinparam padding 4
 
 class user {
-~ brain
++ name
++ status / class
+- login
+- password
 }
 
 ' === BACKEND ===
-package "backend" as back_part <<Folder>> {
+package backend <<Folder>> {
   class NGinx {}
 
   package processing {
@@ -19,6 +22,7 @@ package "backend" as back_part <<Folder>> {
     package way {}
     package notifications {}
     package schedule {}
+    package working_off {}
   }
 
   package database {
@@ -31,17 +35,26 @@ package "backend" as back_part <<Folder>> {
 }
 
 ' === FRONTEND ===
-package "frontend" as front_part <<Folder>> {
+package frontend <<Folder>> {
  package pages {
-  class html {}
+  class html {
+    registration_menu
+    enter_menu
+    main_menu
+  }
  }
 
  package styles {
-  class css {}
+  class css {
+    dark_theme
+    light_theme
+  }
  }
 
  package scripts {
-  class js {}
+  class js {
+    router
+  }
  }
 
  class index_html {}
@@ -54,11 +67,28 @@ index_html --> pages
 index_html --> styles
 index_html --> scripts
 
+css -right..> html
+html <..> js
 
 js --> NGinx
 
+NGinx --> processing
+
+schedule <-- postgresql
+working_off <--> postgresql
+authentification <--> postgresql
+authentification <--> redis
+
+authentification --> working_off
+authentification --> schedule
+authentification --> notifications
+schedule --> way
+working_off --> notifications
+
 ' === HIDDEN ===
-js -[hidden]right- index_html
+redis -[hidden]left- postgresql
+processing -[hidden]down- database
+pages -[hidden]left- styles
 
 ' === NOTES ===
 @enduml
