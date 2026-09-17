@@ -14,8 +14,20 @@ class user {
 package "backend" as back_part <<Folder>> {
   class NGinx {}
 
-  package backend {}
-  package database {}
+  package processing {
+    package authentification {}
+    package way {}
+    package notifications {}
+    package schedule {}
+  }
+
+  package database {
+    database postgresql {
+    }
+
+    database redis {
+    }
+  }
 }
 
 ' === FRONTEND ===
@@ -49,5 +61,4 @@ js --> NGinx
 js -[hidden]right- index_html
 
 ' === NOTES ===
-
 @enduml
