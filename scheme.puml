@@ -20,7 +20,6 @@ package backend <<Folder>> {
   package processing {
     package authentification {}
     package way {}
-    package notifications {}
     package schedule {}
     package working_off {}
   }
@@ -80,10 +79,8 @@ authentification <--> postgresql
 authentification <--> redis
 
 authentification --> working_off
-authentification --> schedule
-authentification --> notifications
+authentification ..> schedule
 schedule --> way
-working_off --> notifications
 
 ' === HIDDEN ===
 redis -[hidden]left- postgresql
