@@ -17,10 +17,11 @@ class user {
 package backend <<Folder>> {
   class NGinx {}
 
-  package authentification {}
-  package way {}
-  package schedule {}
-  package working_off {}
+  class "Аутентификация" as authentification {}
+
+  package "Маршрут" as way {}
+  package "Рассписание" as schedule {}
+  package "Отработка" as working_off {}
 
   package database {
     database postgresql {
@@ -32,26 +33,11 @@ package backend <<Folder>> {
 }
 
 ' === FRONTEND ===
-package frontend <<Folder>> {
- package pages {
-  class html {
-    registration_menu
-    enter_menu
-    main_menu
-  }
+package "frontend (React)" as frontend <<Folder>> {
+ package components {
  }
 
- package styles {
-  class css {
-    dark_theme
-    light_theme
-  }
- }
-
- package scripts {
-  class js {
-    router
-  }
+ package cookie {
  }
 
  class index_html {}
@@ -60,37 +46,33 @@ package frontend <<Folder>> {
 ' === DEPENDENCIES ===
 user -left--> index_html
 
-index_html --> pages
-index_html --> styles
-index_html --> scripts
+components -right- index_html
 
-css -right..> html
-html <..> js
 
-js --> NGinx
+cookie <--> NGinx
 
 NGinx --> authentification
 NGinx --> schedule
+NGinx --> way
 
 schedule <-- postgresql
 working_off <--> postgresql
 authentification <--> postgresql
 authentification <--> redis
 
-authentification --> working_off
-authentification ..> schedule
-schedule --> way
+authentification -right--> working_off
+authentification -right..> schedule
+schedule -right--> way
+
 
 ' === HIDDEN ===
-redis -[hidden]right- postgresql
+components -[hidden]left- cookie
 
-pages -[hidden]left- styles
+redis -[hidden]right- postgresql
 
 NGinx -[hidden]- authentification
 
-working_off -[hidden]right- authentification
-authentification -[hidden]right- schedule
-schedule -[hidden]right- way
+working_off -[hidden]right- schedule
 
 ' === NOTES ===
 @enduml
