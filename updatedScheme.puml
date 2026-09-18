@@ -1,103 +1,77 @@
 @startuml
 skinparam linetype ortho
 allowmixing
-skinparam nodesep 90
-skinparam ranksep 140
-skinparam padding 8
 
-class "Студент" as user {
-  ~ brain
-}
-class "Преподаватель\nпо физре" as teacher {
-  ~ brain
+skinparam nodesep 24
+skinparam ranksep 10
+skinparam padding 4
+
+class user {
++ name
++ status / class
+- login
+- password
 }
 
-package "backend" as back_part <<Folder>> {
-  class NGinx {
-    + Балансировщик
-  }
-  package "Microservices" {
-    class AuthService {
-      + Вход / Выход
-      + Валидация токенов
-      + Проверка ролей
+' === BACKEND ===
+package backend <<Folder>> {
+  class NGinx {}
+
+  package authentification {}
+  package way {}
+  package schedule {}
+  package working_off {}
+
+  package database {
+    database postgresql {
     }
-    class PEService {
-      + Запись на отработки
-      + Управление слотами
-    }
-    class ScheduleService {
-      + Выдача расписания
-      + Парсер изменений
-    }
-    class RouteService {
-      + Поиск кратчайшего пути
-    }
-    class WeatherService {
-      + Текущая погода\nи прогноз
-    }
-  }
-  package "Databases & Cache" {
-    database PostgreSQL {
-      class UsersTable {
-        + Логины / Пароли
-        + Роли
-      }
-      class PESlotsTable {
-        + Расписание слотов
-        + Записи / Статус
-      }
-      class ScheduleDB {
-        + Пары и группы
-      }
-      class RoutesDB {
-        + Граф аудиторий
-      }
-    }
-    database Redis {
-      class CacheAndTokens {
-        + Blacklist токенов
-        + Кеш погоды (TTL 1h)
-      }
+
+    database redis {
     }
   }
 }
 
-package "frontend (React)" as front_part <<Folder>> {
-  package components {
-    class UI {}
-  }
-  package api_client {
-    class Fetcher {
-      + Хранение JWT в памяти
-    }
-  }
+' === FRONTEND ===
+package "frontend (React)" as frontend <<Folder>> {
+ package components {
+ }
+
+ package cookie {
+ }
+
+ class index_html {}
 }
 
-user -right-> front_part
-teacher -right-> front_part
+' === DEPENDENCIES ===
+user -left--> index_html
 
-Fetcher ----down-> NGinx : " API запросы"
+components -right- index_html
 
-NGinx ----down-> AuthService : " Auth"
-NGinx ----down-> ScheduleService : " open"
-NGinx ----down-> RouteService : " open"
-NGinx ----down-> WeatherService : " open"
 
-AuthService -right-> PEService : " Проверка прав"
+cookie <--> NGinx
 
-AuthService <----down-> CacheAndTokens : " Проверка Blacklist"
-AuthService ----down-> UsersTable : " Сверка логина"
-PEService <----down-> PESlotsTable : " Чтение/Запись"
-ScheduleService <----down-> ScheduleDB : " Чтение"
-RouteService <----down-> RoutesDB : " Поиск пути"
-WeatherService <----down-> CacheAndTokens : ""
+NGinx --> authentification
+NGinx --> schedule
+NGinx --> way
 
-user -[hidden]down- teacher
-PEService -[hidden]right- ScheduleService
-ScheduleService -[hidden]right- RouteService
-RouteService -[hidden]right- WeatherService
-UsersTable -[hidden]right- PESlotsTable
-PESlotsTable -[hidden]right- ScheduleDB
-ScheduleDB -[hidden]right- RoutesDB
+schedule <-- postgresql
+working_off <--> postgresql
+authentification <--> postgresql
+authentification <--> redis
+
+authentification -right--> working_off
+authentification -right..> schedule
+schedule -right--> way
+
+
+' === HIDDEN ===
+components -[hidden]left- cookie
+
+redis -[hidden]right- postgresql
+
+NGinx -[hidden]- authentification
+
+working_off -[hidden]right- schedule
+
+' === NOTES ===
 @enduml
