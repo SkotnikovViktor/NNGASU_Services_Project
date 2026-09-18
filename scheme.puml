@@ -17,12 +17,10 @@ class user {
 package backend <<Folder>> {
   class NGinx {}
 
-  package processing {
-    package authentification {}
-    package way {}
-    package schedule {}
-    package working_off {}
-  }
+  package authentification {}
+  package way {}
+  package schedule {}
+  package working_off {}
 
   package database {
     database postgresql {
@@ -71,7 +69,8 @@ html <..> js
 
 js --> NGinx
 
-NGinx --> processing
+NGinx --> authentification
+NGinx --> schedule
 
 schedule <-- postgresql
 working_off <--> postgresql
@@ -83,9 +82,15 @@ authentification ..> schedule
 schedule --> way
 
 ' === HIDDEN ===
-redis -[hidden]left- postgresql
-processing -[hidden]down- database
+redis -[hidden]right- postgresql
+
 pages -[hidden]left- styles
+
+NGinx -[hidden]- authentification
+
+working_off -[hidden]right- authentification
+authentification -[hidden]right- schedule
+schedule -[hidden]right- way
 
 ' === NOTES ===
 @enduml
