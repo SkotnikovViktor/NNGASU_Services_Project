@@ -20,8 +20,9 @@ package backend <<Folder>> {
   class "Аутентификация" as authentification {}
 
   package "Маршрут" as way {}
-  package "Рассписание" as schedule {}
+  package "Расписание" as schedule {}
   package "Отработка" as working_off {}
+  package "Погода" as weather {}
 
   package database {
     database postgresql {
@@ -37,7 +38,7 @@ package "frontend (React)" as frontend <<Folder>> {
  package components {
  }
 
- package cookie {
+ database cookie {
  }
 
  class index_html {}
@@ -49,7 +50,7 @@ user -left--> index_html
 components -right- index_html
 
 
-cookie <--> NGinx
+frontend <--> NGinx
 
 NGinx --> authentification
 NGinx --> schedule
@@ -73,6 +74,7 @@ redis -[hidden]right- postgresql
 NGinx -[hidden]- authentification
 
 working_off -[hidden]right- schedule
+way -right[hidden]- weather
 
 ' === NOTES ===
 @enduml
