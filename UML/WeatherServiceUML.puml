@@ -1,0 +1,32 @@
+@startuml
+
+interface "Фронтенд" as Gateway
+
+package "WeatherService" <<Microservice>> {
+  component "WeatherController" as Controller
+  
+  component "WeatherService\n(Коментарии к погоде\n и проверка ответа провайдера)" as Service
+  
+  component "WeatherApiClient\n(HTTP-клиент)" as Client
+  
+}
+
+database "Redis" {
+  component "WeatherCache\n(TTL: 15m)" as Cache
+}
+
+cloud "Провайдер погоды" as ExtAPI
+
+Gateway -down-> Controller : GET /api/v1/weather
+Controller -down-> Service : Получить данные
+
+Service -left-> Cache : 1. Проверка кеша (Чтение)
+Service -down-> Client : 2. Если кеш пуст
+
+Client -down-> ExtAPI : 3. Запрос\nпогоды
+ExtAPI -up-> Client : Успех / Ошибка / Таймаут
+
+Client -up-> Service : 4. Данные провайдера
+Service -left-> Cache : 5. Запись в кеш (только успешные данные)
+
+@enduml
