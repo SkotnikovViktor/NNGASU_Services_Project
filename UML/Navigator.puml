@@ -1,0 +1,70 @@
+@startuml
+title Навигатор ННГАСУ 
+actor Студент as Student
+participant Web as "Сайт"
+participant Programm as "Navigator"
+database DataBaseNavigator as "PostgreSQL"
+
+
+' Студент вводит данные, где он сейчас и куда ему нужно
+Student -> Web: Вводит точки А и Б
+Student -> Web: Нажимает кнопку "Проложить маршрут"
+
+activate Programm
+Web -> Programm: init(start_number_room, end_number_room)
+
+
+Programm -> DataBaseNavigator: SELECT id FROM degrees WHERE number_room = start_number_room
+activate DataBaseNavigator
+DataBaseNavigator --> Programm: idroom
+deactivate DataBaseNavigator
+
+
+Programm -> DataBaseNavigator: SELECT id FROM degrees WHERE number_room = end_number_room
+activate DataBaseNavigator
+DataBaseNavigator --> Programm: idroom
+deactivate DataBaseNavigator
+
+Programm -> Programm: BFS()
+activate Programm #LightBlue
+
+loop Пока очередь не пуста \ Путь не найден
+    Programm -> Programm: return_list_sm(degree_now)
+    activate Programm #LightCyan
+    
+    Programm -> DataBaseNavigator: SELECT idin FROM connections WHERE idfrom = 
+    activate DataBaseNavigator
+    DataBaseNavigator --> Programm: Список смежных вершин
+    deactivate DataBaseNavigator
+    
+    Programm --> Programm: Возвращаем список смежных вершин в BFS
+    deactivate Programm #LightCyan
+end
+
+
+alt Путь успешно найден
+    Programm -> Programm: Поиск завершён успешно
+    deactivate Programm #LightBlue
+    
+    Programm -> Programm: path_back()
+    activate Programm #LightSalmon
+    Programm -> DataBaseNavigator: SELECT title FROM degrees WHERE id - возвращаем название вершины
+    activate DataBaseNavigator
+    DataBaseNavigator --> Programm: Возвращает title веришны по id
+    deactivate DataBaseNavigator
+    Programm -> Programm: Маршрут собран
+    deactivate Programm #LightSalmon
+    Programm --> Web: reverse список вершин маршрута
+    Web --> Student: Подробный путь до нужной точки
+    deactivate Programm
+    
+    
+    
+    
+else Путь не найден
+    Programm --> Web: return -1
+    Web --> Student: Путь не найден
+ 
+end
+ 
+@enduml
