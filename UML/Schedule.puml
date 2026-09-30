@@ -1,0 +1,75 @@
+@startuml
+skinparam linetype ortho
+allowmixing
+
+skinparam nodesep 24
+skinparam ranksep 10
+skinparam padding 4
+
+
+Actor Student
+Folder Backend {
+    Folder schedule:Microservice as schedule {
+    }
+
+    Database PostgreSQL {
+    }
+
+    entity "Запрос к базе данных" as schedule-database_request <<SELECT>> {
+        Группа
+        Дата
+    }
+
+    entity "Ответ базы данных" as database-schedule_answer {
+        Успех
+    ..
+        [Массив]
+        Время
+        Пара
+        Место проведения
+    --
+        Ничего не найдено
+    ..
+        None
+    --
+        Неверные данные
+    ..
+        Error
+    }
+}
+
+entity "Запрос" as frontend-backend_request <<POST>> {
+    + Группа
+    + Дата
+}
+
+entity "Ответ" as backend-frontend_answer {
+    Успех
+..
+    + 200
+    [Массив]
+    Время
+    Пара
+    Место проведения
+--
+    По данным ничего не найдено
+..
+    + 400
+--
+    Неверный запрос (Некорректные данные)
+..
+    + 425
+}
+
+Student --> schedule
+(Student, schedule) .. frontend-backend_request
+
+schedule --> PostgreSQL
+(schedule, PostgreSQL) .. schedule-database_request
+
+schedule <-- PostgreSQL
+(schedule, PostgreSQL) .. database-schedule_answer
+
+Student <-- schedule
+(Student, schedule) .. backend-frontend_answer
+@enduml
