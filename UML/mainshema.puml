@@ -1,0 +1,80 @@
+@startuml
+skinparam linetype ortho
+allowmixing
+
+skinparam nodesep 24
+skinparam ranksep 10
+skinparam padding 4
+
+class user {
++ name
++ status / class
+- login
+- password
+}
+
+' === BACKEND ===
+package backend <<Folder>> {
+  class NGinx {}
+
+  class "Аутентификация" as authentification {}
+
+  package "Маршрут" as way {}
+  package "Расписание" as schedule {}
+  package "Отработка" as working_off {}
+  package "Погода" as weather {}
+
+  package database {
+    database postgresql {
+    }
+
+    database redis {
+    }
+  }
+}
+
+' === FRONTEND ===
+package "frontend (React)" as frontend <<Folder>> {
+ package components {
+ }
+
+ database cookie {
+ }
+
+ class index_html {}
+}
+
+' === DEPENDENCIES ===
+user -left--> index_html
+
+components -right- index_html
+
+
+frontend <--> NGinx
+
+NGinx --> authentification
+NGinx --> schedule
+NGinx --> way
+
+schedule <-- postgresql
+working_off <--> postgresql
+authentification <--> postgresql
+authentification <--> redis
+
+authentification -right--> working_off
+authentification -right..> schedule
+schedule -right--> way
+
+
+' === HIDDEN ===
+components -[hidden]left- cookie
+
+redis -[hidden]right- postgresql
+
+NGinx -[hidden]- authentification
+
+working_off -[hidden]right- schedule
+way -right[hidden]- weather
+
+' === NOTES ===
+@enduml
